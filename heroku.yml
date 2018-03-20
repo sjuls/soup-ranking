@@ -2,4 +2,4 @@ build:
   languages:
     - node
 run:
-  web: npm i && npm run start
+  web: npm run start
