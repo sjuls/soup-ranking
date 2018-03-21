@@ -2,9 +2,8 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const cors = require('cors');
 
-const whitelist = [ 'junesoup.surge.sh', 'soup-ranking.herokuapp.com' ]
+const whitelist = [ 'junesoup.surge.sh/', 'soup-ranking.herokuapp.com/' ]
 const corsOptions = {
   origin: (origin, callback) => {
     if (whitelist.indexOf(origin) !== -1) {
@@ -18,7 +17,13 @@ const corsOptions = {
 const indexRouter = require('./routes/index');
 
 const app = express();
-app.use(cors(corsOptions));
+
+app.options("*", (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+  res.send(200);
+});
 
 app.use(logger('dev'));
 app.use(express.json());
