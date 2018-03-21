@@ -1,11 +1,24 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const cors = require('cors');
 
-var indexRouter = require('./routes/index');
+const whitelist = [ 'junesoup.surge.sh', 'soup-ranking.herokuapp.com' ]
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
 
-var app = express();
+const indexRouter = require('./routes/index');
+
+const app = express();
+app.use(cors(corsOptions));
 
 app.use(logger('dev'));
 app.use(express.json());
