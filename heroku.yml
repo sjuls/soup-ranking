@@ -1,5 +1,0 @@
-build:
-  languages:
-    - node
-run:
-  web: npm run start

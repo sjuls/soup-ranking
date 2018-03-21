@@ -3,7 +3,7 @@ const router = express.Router();
 
 const rankings = require('./ranking').currentRankings
 
-router.get('/_status', (req, res, next) => res.json({ title: 'I am ALIVE!' }));
+router.get('/_status', (req, res, next) => res.json({ status: 'I am ALIVE!' }));
 
 router.post('/score', (req, res, next) => {
   rankings.push(req.body);
