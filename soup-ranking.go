@@ -22,12 +22,15 @@ func main() {
 	routes.AddStatus(router)
 	routes.AddScore(router)
 
-	corsConfig:=handlers.AllowedOrigins([]string{
+	corsHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
+
+	corsOrigin:=handlers.AllowedOrigins([]string{
 		"https://junesoup.surge.sh",
 		"http://junesoup.surge.sh",
 		"https://soup-ranking.herokuapp.com",
 		"http://soup-ranking.herokuapp.com",
 	})
+	corsMethods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 
-	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(corsConfig)(router)))
+	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(corsHeaders, corsOrigin, corsMethods)(router)))
 }
