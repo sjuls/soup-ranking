@@ -2,9 +2,9 @@ package dbctx
 
 import (
 	"fmt"
-	"regexp"
 	"github.com/jinzhu/gorm"
-  _ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"regexp"
 )
 
 var (
@@ -14,13 +14,13 @@ var (
 type (
 	Soup struct {
 		gorm.Model
-		Name    	string
+		Name string
 	}
 
 	Score struct {
 		gorm.Model
-		Score		 	int
-		Soup   		*Soup
+		Score int
+		Soup  *Soup
 	}
 )
 
@@ -36,12 +36,12 @@ func Init(database *string) error {
 	}
 
 	db, err := gorm.Open("postgres", databaseURL)
-  if err != nil {
-    return err
-  }
+	if err != nil {
+		return err
+	}
 	defer db.Close()
-	
-	db.AutoMigrate(&Soup{},&Score{})
+
+	db.AutoMigrate(&Soup{}, &Score{})
 
 	return nil
 }
@@ -54,5 +54,5 @@ func normalizeDatabaseURL(databaseURL *string) (string, error) {
 
 	match := r.FindStringSubmatch(*databaseURL)
 
-	return	fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require", match[3], match[4], match[1], match[2], match[5]), nil
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require", match[3], match[4], match[1], match[2], match[5]), nil
 }
