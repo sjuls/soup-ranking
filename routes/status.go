@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gorilla/mux"
 	"net/http"
+	"github.com/sjuls/soup-ranking/utils"
 )
 
 type Status struct {
@@ -20,5 +21,6 @@ func statusHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	status := Status{
 		"I am ALIVE!",
 	}
-	JSON(w, status)
+
+	utils.JSON(w, status)
 }
