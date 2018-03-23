@@ -1,12 +1,12 @@
 package main
 
 import (
-	"os"
-	"net/http"
-	"log"
 	"github.com/gorilla/mux"
-	"github.com/sjuls/soup-ranking/routes"
 	"github.com/sjuls/soup-ranking/dbctx"
+	"github.com/sjuls/soup-ranking/routes"
+	"log"
+	"net/http"
+	"os"
 )
 
 func main() {
@@ -21,6 +21,5 @@ func main() {
 	routes.AddStatus(router)
 	routes.AddScore(router)
 
-	log.Fatal(http.ListenAndServe(":" + port, router))
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
-

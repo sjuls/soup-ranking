@@ -2,9 +2,9 @@ package routes
 
 import (
 	"encoding/json"
-	"net/http"
 	"github.com/gorilla/mux"
 	"github.com/sjuls/soup-ranking/dbctx"
+	"net/http"
 )
 
 const (
@@ -32,7 +32,7 @@ func getScoreHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	var scores []dbctx.Score
-	
+
 	db.Find(&scores)
 
 	JSON(w, scores)
@@ -52,7 +52,7 @@ func postScoreHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Cannot read body", http.StatusBadRequest)
 		return
 	}
-	
+
 	db.Create(score)
 	w.WriteHeader(http.StatusAccepted)
 }

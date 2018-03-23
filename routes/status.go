@@ -1,12 +1,12 @@
 package routes
 
 import (
-	"net/http"
 	"github.com/gorilla/mux"
+	"net/http"
 )
 
 type Status struct {
-	Status      string    `json:"status"`
+	Status string `json:"status"`
 }
 
 func AddStatus(r *mux.Router) {
