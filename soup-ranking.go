@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/gorilla/handlers"
 	"github.com/sjuls/soup-ranking/dbctx"
 	"github.com/sjuls/soup-ranking/routes"
 	"log"
@@ -21,5 +22,12 @@ func main() {
 	routes.AddStatus(router)
 	routes.AddScore(router)
 
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	corsConfig:=handlers.AllowedOrigins([]string{
+		"https://junesoup.surge.sh",
+		"http://junesoup.surge.sh",
+		"https://soup-ranking.herokuapp.com",
+		"http://soup-ranking.herokuapp.com",
+	})
+
+	log.Fatal(http.ListenAndServe(":"+port, handlers.CORS(corsConfig)(router)))
 }
