@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sjuls/soup-ranking/dbctx"
 	"net/http"
+	"github.com/sjuls/soup-ranking/utils"
 )
 
 const (
@@ -39,7 +40,7 @@ func getScoreHandlerFunc(w http.ResponseWriter, r *http.Request) {
 
 	db.Find(&scores)
 
-	JSON(w, scores)
+	utils.JSON(w, scores)
 }
 
 func postScoreHandlerFunc(w http.ResponseWriter, r *http.Request) {
