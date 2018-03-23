@@ -15,12 +15,12 @@ RUN mkdir -p /out
 RUN dep ensure
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /out/soup-ranking .
 
-FROM scratch as soup-ranking
+FROM alpine as soup-ranking
 
 ENV PORT=8080
-ENV DATABASE_URL=
+ENV DATABASE_URL=inject-this
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /out/soup-ranking /
+COPY --from=builder /out/soup-ranking /bin/soup-ranking
 
-CMD [ "/soup-ranking" ]
+CMD [ "soup-ranking" ]
