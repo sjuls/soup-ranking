@@ -2,9 +2,10 @@ package routes
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/sjuls/soup-ranking/dbctx"
-	"net/http"
 	"github.com/sjuls/soup-ranking/utils"
 )
 
@@ -12,11 +13,13 @@ const (
 	path = "/score"
 )
 
-type ScoreDto struct {
-	Score int `json:"score"`
+type scoreDto struct {
+	Score   int    `json:"score"`
 	Comment string `json:"comment"`
 }
 
+// AddScore - Adds routes to the provided router
+// to enable addition an fetching of soup scores
 func AddScore(r *mux.Router) {
 	r.Methods("GET").
 		Name("Get score").
@@ -52,7 +55,7 @@ func postScoreHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	score := &ScoreDto{}
+	score := &scoreDto{}
 	err = json.NewDecoder(r.Body).Decode(score)
 	if err != nil {
 		http.Error(w, "Cannot read body", http.StatusBadRequest)
@@ -60,7 +63,7 @@ func postScoreHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db.Create(&dbctx.Score{
-		Score: score.Score,
+		Score:   score.Score,
 		Comment: score.Comment,
 	})
 	w.WriteHeader(http.StatusAccepted)
