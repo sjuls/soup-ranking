@@ -20,6 +20,7 @@ type (
 	Score struct {
 		gorm.Model
 		Score int
+		Comment string
 		Soup  *Soup
 	}
 )
