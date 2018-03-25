@@ -1,15 +1,17 @@
 package routes
 
 import (
-	"github.com/gorilla/mux"
 	"net/http"
+
+	"github.com/gorilla/mux"
 	"github.com/sjuls/soup-ranking/utils"
 )
 
-type Status struct {
+type status struct {
 	Status string `json:"status"`
 }
 
+// AddStatus - adds a status route to the provided router
 func AddStatus(r *mux.Router) {
 	r.Methods("GET").
 		Name("Status").
@@ -18,7 +20,7 @@ func AddStatus(r *mux.Router) {
 }
 
 func statusHandlerFunc(w http.ResponseWriter, r *http.Request) {
-	status := Status{
+	status := status{
 		"I am ALIVE!",
 	}
 
