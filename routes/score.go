@@ -14,6 +14,7 @@ const (
 
 type ScoreDto struct {
 	Score int `json:"score"`
+	Comment string `json:"comment"`
 }
 
 func AddScore(r *mux.Router) {
@@ -60,6 +61,7 @@ func postScoreHandlerFunc(w http.ResponseWriter, r *http.Request) {
 
 	db.Create(&dbctx.Score{
 		Score: score.Score,
+		Comment: score.Comment,
 	})
 	w.WriteHeader(http.StatusAccepted)
 }
