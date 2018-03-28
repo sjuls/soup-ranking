@@ -2,9 +2,10 @@ package dbctx
 
 import (
 	"fmt"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"regexp"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres" // Import postgres dialect for GORM.
 )
 
 var (
@@ -12,22 +13,27 @@ var (
 )
 
 type (
+	// Soup holds soup metadata
 	Soup struct {
 		gorm.Model
 		Name string
 	}
 
+	// Score holds information submitted by users regarding the soup of the day
 	Score struct {
 		gorm.Model
-		Score int
-		Soup  *Soup
+		Score   int
+		Comment string
+		Soup    *Soup
 	}
 )
 
+// Open returns an open database connection.
 func Open() (db *gorm.DB, err error) {
 	return gorm.Open("postgres", databaseURL)
 }
 
+// Init - call to migrate the database and enable the use of the Open function.
 func Init(database *string) error {
 	var err error
 	databaseURL, err = normalizeDatabaseURL(database)
