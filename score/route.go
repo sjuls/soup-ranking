@@ -19,7 +19,7 @@ type scoreDto struct {
 }
 
 // AddRoute - Adds routes to the provided router
-// to enable addition an fetching of soup scores
+// to enable addition and fetching of soup scores
 func AddRoute(r *mux.Router) {
 	r.Methods("GET").
 		Name("Get score").
