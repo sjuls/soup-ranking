@@ -22,7 +22,7 @@ func (h *AdminHandler) HandleEvent(event *EventCallback) {
 		return
 	}
 
-	innerEvent := DMEvent{}
+	innerEvent := MessageEvent{}
 	if err := mapstructure.Decode(event.Event, &innerEvent); err != nil {
 		panic(err)
 	}
