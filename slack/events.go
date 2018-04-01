@@ -8,12 +8,12 @@ type (
 
 	// EventHandler interface is used to register event handlers for Slack events.
 	EventHandler interface {
-		HandleEvent(event *Event)
+		HandleEvent(event *EventCallback)
 	}
 )
 
 // HandleEvent - Handle a Slack event by triggering registered eventhandlers.
-func (geh *GlobalEventHandler) HandleEvent(event *Event) {
+func (geh *GlobalEventHandler) HandleEvent(event *EventCallback) {
 	for _, eventHandler := range geh.EventHandlers {
 		go eventHandler.HandleEvent(event)
 	}

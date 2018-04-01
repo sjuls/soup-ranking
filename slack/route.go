@@ -45,7 +45,7 @@ func AddRoute(verificationToken string, baseURL string, accessToken string, admi
 
 func slackHandlerFunc(verificationToken string, eventHandler EventHandler) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		event := &Event{}
+		event := &EventCallback{}
 		if err := json.NewDecoder(r.Body).Decode(event); err != nil {
 			log.Printf("SlackHandler error %s", err)
 			http.Error(w, "Cannot read body", http.StatusBadRequest)

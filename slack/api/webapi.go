@@ -18,6 +18,7 @@ type (
 	PostMessage struct {
 		Channel string `json:"channel"`
 		Text    string `json:"text"`
+		AsUser  bool   `json:"as_user"`
 		// TODO: Optional properties
 	}
 )
@@ -38,8 +39,8 @@ func (api *SlackWebAPI) send(action string, v interface{}) (*http.Response, erro
 		return nil, err
 	}
 
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer: %s", api.AccessToken))
-	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", api.AccessToken))
+	request.Header.Set("Content-type", "application/json; charset=utf-8")
 
 	client := &http.Client{}
 	return client.Do(request)

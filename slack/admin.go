@@ -17,23 +17,41 @@ type (
 )
 
 // HandleEvent handles events delegated to AdminHandler
-func (h *AdminHandler) HandleEvent(event *Event) {
-	if event.Type != DMEventType {
+func (h *AdminHandler) HandleEvent(event *EventCallback) {
+	if !shouldHandle(event) {
 		return
 	}
 
 	innerEvent := DMEvent{}
 	if err := mapstructure.Decode(event.Event, &innerEvent); err != nil {
-		log.Print(err)
 		panic(err)
 	}
 
+	// TODO: Do something with the events
 	message := api.PostMessage{
 		Channel: innerEvent.Channel,
-		Text:    fmt.Sprintf("echo: %s", innerEvent.Text),
+		Text:    fmt.Sprintf("Echo: %s", innerEvent.Text),
+		AsUser:  true,
 	}
 
-	if _, err := h.WebAPI.PostMessage(&message); err != nil {
+	_, err := h.WebAPI.PostMessage(&message)
+	if err != nil {
 		log.Print(err)
+		panic(err)
 	}
+}
+
+func shouldHandle(event *EventCallback) bool {
+	if event.Event["type"] != MessageEventType {
+		return false
+	}
+
+	// Do not handle events triggered by the bots themselves.
+	for _, authedUser := range event.AuthedUsers {
+		if event.Event["user"] == authedUser {
+			return false
+		}
+	}
+
+	return true
 }
