@@ -1,24 +1,20 @@
 package slack
 
-import (
-	"log"
+type (
+	// GlobalEventHandler propogates calls to registered eventhandlers
+	GlobalEventHandler struct {
+		EventHandlers []EventHandler
+	}
+
+	// EventHandler interface is used to register event handlers for Slack events.
+	EventHandler interface {
+		HandleEvent(event *Event)
+	}
 )
 
-// Event - represents an event sent by Slack
-type Event struct {
-	Token       string              `json:"token"`
-	Challenge   string              `json:"challenge"`
-	TeamID      string              `json:"team_id"`
-	APIAppID    string              `json:"api_app_id"`
-	Event       map[string]struct{} `json:"event"`
-	Type        string              `json:"type"`
-	AuthedUsers []string            `json:"authed_users"`
-	EventID     string              `json:"event_id"`
-	EventTime   int                 `json:"event_time"`
-}
-
-// HandleEvent - Handle a Slack event.
-func HandleEvent(event *Event) {
-	// TODO: Handle events...
-	log.Println("Received Slack event")
+// HandleEvent - Handle a Slack event by triggering registered eventhandlers.
+func (geh *GlobalEventHandler) HandleEvent(event *Event) {
+	for _, eventHandler := range geh.EventHandlers {
+		go eventHandler.HandleEvent(event)
+	}
 }

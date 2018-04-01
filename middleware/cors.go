@@ -13,13 +13,24 @@ var (
 		"https://soup-ranking.herokuapp.com",
 		"http://soup-ranking.herokuapp.com",
 	}
+	allowedHeaders = []string{
+		"X-Requested-With",
+		"Content-Type",
+	}
+	allowedMethods = []string{
+		"GET",
+		"HEAD",
+		"POST",
+		"PUT",
+		"OPTIONS",
+	}
 )
 
 // CORS wraps handlers used to add CORS headers to responses.
 func CORS(handler http.Handler) http.Handler {
-	corsHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
 	corsOrigin := handlers.AllowedOrigins(allowedOrigins)
-	corsMethods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+	corsHeaders := handlers.AllowedHeaders(allowedHeaders)
+	corsMethods := handlers.AllowedMethods(allowedMethods)
 
 	return handlers.CORS(corsHeaders, corsOrigin, corsMethods)(handler)
 }

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/sjuls/soup-ranking/dbctx"
@@ -23,7 +24,10 @@ var (
 func main() {
 	port := os.Getenv("PORT")
 	database := os.Getenv("DATABASE_URL")
-	slackToken := os.Getenv("SLACK_TOKEN")
+	slackVerificationToken := os.Getenv("SLACK_VERIFICATION_TOKEN")
+	slackAccessToken := os.Getenv("SLACK_ACCESS_TOKEN")
+	slackBaseURL := os.Getenv("SLACK_BASEURL")
+	slackAdminUsers := os.Getenv("SLACK_ADMIN_USERS")
 
 	if err := dbctx.Init(&database); err != nil {
 		panic(err)
@@ -33,11 +37,12 @@ func main() {
 	routes := []func(router *mux.Router){
 		status.AddRoute,
 		score.AddRoute,
-		slack.AddRoute(slackToken),
+		slack.AddRoute(slackVerificationToken, slackBaseURL, slackAccessToken, strings.Split(slackAdminUsers, ",")),
 	}
 
 	registerRoutes(router, routes)
 
+	log.Printf("Starting up soup-ranking on port %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, applyMiddleware(router)))
 }
 

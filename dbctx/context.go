@@ -3,6 +3,7 @@ package dbctx
 import (
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres" // Import postgres dialect for GORM.
@@ -16,15 +17,22 @@ type (
 	// Soup holds soup metadata
 	Soup struct {
 		gorm.Model
-		Name string
+		Name string `gorm:"unique_index"`
+	}
+
+	// SoupOfTheDay holds information rega
+	SoupOfTheDay struct {
+		gorm.Model
+		day  time.Time
+		Soup *Soup
 	}
 
 	// Score holds information submitted by users regarding the soup of the day
 	Score struct {
 		gorm.Model
-		Score   int
-		Comment string
-		Soup    *Soup
+		Score        int
+		Comment      string
+		SoupOfTheDay *SoupOfTheDay
 	}
 )
 
@@ -41,13 +49,13 @@ func Init(database *string) error {
 		return err
 	}
 
-	db, err := gorm.Open("postgres", databaseURL)
+	db, err := Open()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	db.AutoMigrate(&Soup{}, &Score{})
+	db.AutoMigrate(&Soup{}, &SoupOfTheDay{}, &Score{})
 
 	return nil
 }
