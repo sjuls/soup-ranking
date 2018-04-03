@@ -28,7 +28,7 @@ func AddRoute(verificationToken string, baseURL string, accessToken string, admi
 	}
 	var globalEventHandler EventHandler = &GlobalEventHandler{
 		[]EventHandler{
-			EventHandler(&AdminHandler{
+			EventHandler(&CommandsHandler{
 				&webAPI,
 				adminUsers,
 			}),

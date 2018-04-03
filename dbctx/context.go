@@ -61,12 +61,12 @@ func Init(database *string) error {
 }
 
 func normalizeDatabaseURL(databaseURL *string) (string, error) {
-	r, err := regexp.Compile("^postgres://(.+):(.+)@(.+):(.+)/(.+)$")
+	regex, err := regexp.Compile("^postgres://(.+):(.+)@(.+):(.+)/(.+)$")
 	if err != nil {
 		return "", err
 	}
 
-	match := r.FindStringSubmatch(*databaseURL)
+	match := regex.FindStringSubmatch(*databaseURL)
 
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require", match[3], match[4], match[1], match[2], match[5]), nil
 }
