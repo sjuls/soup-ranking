@@ -23,7 +23,7 @@ type (
 	// SoupOfTheDay holds information rega
 	SoupOfTheDay struct {
 		gorm.Model
-		day  time.Time
+		date time.Time `sql:"type:date;unique_index;DEFAULT:current_date"`
 		Soup *Soup
 	}
 

@@ -27,6 +27,7 @@ const (
 var (
 	registeredCommands = map[string]func(flags []string, output io.Writer){
 		"soup": commands.Soup,
+		"rate": commands.Rate,
 	}
 	adminCommands = []string{
 		"soup",

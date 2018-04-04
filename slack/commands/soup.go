@@ -10,24 +10,24 @@ import (
 
 type (
 	soupFlags struct {
-		Title string
+		Name string
 	}
 )
 
 // Soup command function for the soup command
 func Soup(args []string, output io.Writer) {
-	flags, err := extractFlags(args, output)
+	flags, err := extractSoupFlags(args, output)
 	if err != nil {
 		return
 	}
 
-	fmt.Fprintln(output, flags.Title)
+	fmt.Fprintln(output, flags.Name)
 }
 
-func extractFlags(args []string, output io.Writer) (*soupFlags, error) {
+func extractSoupFlags(args []string, output io.Writer) (*soupFlags, error) {
 	flags := soupFlags{}
 	config := func(flagset *flag.FlagSet) {
-		flagset.StringVar(&flags.Title, "title", "Unknown soup", "Set the title of the soup of the day")
+		flagset.StringVar(&flags.Name, "name", "Unknown soup", "Set the name of the soup of the day")
 	}
 
 	if err := utils.ParseArguments("soup", args, config, output); err != nil {
