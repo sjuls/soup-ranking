@@ -15,8 +15,7 @@ import (
 )
 
 type (
-	// CommandsHandler handles admin commands received through Slack events
-	CommandsHandler struct {
+	commandsHandler struct {
 		webAPI             api.SlackWebAPI
 		adminUsers         []string
 		registeredCommands map[string]commands.Command
@@ -34,7 +33,7 @@ func NewCommandsHandler(webAPI api.SlackWebAPI, repo score.Repository, adminUser
 		"rate":  commands.NewRateCommand(repo),
 	}
 
-	var handler EventHandler = &CommandsHandler{
+	var handler EventHandler = &commandsHandler{
 		webAPI,
 		adminUsers,
 		commands,
@@ -44,7 +43,7 @@ func NewCommandsHandler(webAPI api.SlackWebAPI, repo score.Repository, adminUser
 }
 
 // HandleEvent handles events delegated to AdminHandler
-func (h *CommandsHandler) HandleEvent(event *EventCallback) {
+func (h *commandsHandler) HandleEvent(event *EventCallback) {
 	if !shouldHandle(event) {
 		return
 	}
@@ -84,14 +83,14 @@ func (h *CommandsHandler) HandleEvent(event *EventCallback) {
 	}
 }
 
-func (h *CommandsHandler) isAuthorized(commandName string, user string) bool {
+func (h *commandsHandler) isAuthorized(commandName string, user string) bool {
 	if h.registeredCommands[commandName].RequiresAdmin() {
 		return h.isAdminUser(user)
 	}
 	return true
 }
 
-func (h *CommandsHandler) isAdminUser(user string) bool {
+func (h *commandsHandler) isAdminUser(user string) bool {
 	for _, adminUser := range h.adminUsers {
 		if adminUser == user {
 			return true
@@ -100,7 +99,7 @@ func (h *CommandsHandler) isAdminUser(user string) bool {
 	return false
 }
 
-func (h *CommandsHandler) executeCommand(commandName string, flags []string, output io.Writer) {
+func (h *commandsHandler) executeCommand(commandName string, flags []string, output io.Writer) {
 	if command := h.registeredCommands[commandName]; command != nil {
 		command.Execute(flags, output)
 	}
