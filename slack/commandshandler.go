@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/sjuls/soup-ranking/soup"
+
 	"github.com/sjuls/soup-ranking/score"
 
 	"github.com/mitchellh/mapstructure"
@@ -27,10 +29,15 @@ const (
 )
 
 // NewCommandsHandler create a new commandshandler
-func NewCommandsHandler(webAPI api.SlackWebAPI, repo score.Repository, adminUsers []string) EventHandler {
+func NewCommandsHandler(
+	webAPI api.SlackWebAPI,
+	soupRepository soup.Repository,
+	scoreRepository score.Repository,
+	adminUsers []string,
+) EventHandler {
 	commands := map[string]commands.Command{
-		"today": commands.NewTodayCommand(),
-		"rate":  commands.NewRateCommand(repo),
+		"today": commands.NewTodayCommand(soupRepository),
+		"rate":  commands.NewRateCommand(scoreRepository),
 	}
 
 	var handler EventHandler = &commandsHandler{

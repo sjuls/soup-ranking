@@ -7,14 +7,25 @@ import (
 )
 
 type (
+	soupRepository struct {
+		connFactory dbctx.ConnectionFactory
+	}
 	// Repository to provide access to methods to handle soup data
-	Repository struct {
+	Repository interface {
+		// SetSoup sets the soup of the day
+		SetSoup(name string) error
 	}
 )
 
-// SetSoup sets the soup of the day
-func (m *Repository) SetSoup(name string) error {
-	db, err := dbctx.Open()
+// NewRepository creates a new repository
+func NewRepository(connFactory dbctx.ConnectionFactory) Repository {
+	var repo Repository = &soupRepository{
+		connFactory,
+	}
+	return repo
+}
+func (m *soupRepository) SetSoup(name string) error {
+	db, err := m.connFactory.Open()
 	if err != nil {
 		return err
 	}

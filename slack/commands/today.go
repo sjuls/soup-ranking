@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/sjuls/soup-ranking/soup"
 	"github.com/sjuls/soup-ranking/utils"
 )
 
@@ -14,12 +15,15 @@ type (
 	}
 
 	todayCommand struct {
+		repo soup.Repository
 	}
 )
 
 // NewTodayCommand create a new today command
-func NewTodayCommand() Command {
-	var todayCmd Command = &todayCommand{}
+func NewTodayCommand(repo soup.Repository) Command {
+	var todayCmd Command = &todayCommand{
+		repo,
+	}
 	return todayCmd
 }
 
@@ -29,7 +33,13 @@ func (c *todayCommand) Execute(args []string, output io.Writer) {
 		return
 	}
 
-	fmt.Fprintln(output, flags.Name)
+	err = c.repo.SetSoup(flags.Name)
+
+	if err != nil {
+		fmt.Fprintln(output, err.Error())
+	} else {
+		fmt.Fprintf(output, "Roger. Soup of the day is now set to '%s'.", flags.Name)
+	}
 }
 
 func (c *todayCommand) RequiresAdmin() bool {

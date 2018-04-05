@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/sjuls/soup-ranking/score"
+	"github.com/sjuls/soup-ranking/soup"
 
 	"github.com/gorilla/mux"
 	"github.com/sjuls/soup-ranking/slack/api"
@@ -23,11 +24,11 @@ type (
 )
 
 // AddRoute - adds a slack event route which accepts event with the given token
-func AddRoute(verificationToken string, baseURL string, accessToken string, repo score.Repository, adminUsers []string) func(r *mux.Router) {
+func AddRoute(verificationToken string, baseURL string, accessToken string, soupRepository soup.Repository, scoreRepository score.Repository, adminUsers []string) func(r *mux.Router) {
 	webAPI := api.NewSlackWebAPI(baseURL, accessToken, &http.Client{})
-	var globalEventHandler EventHandler = &GlobalEventHandler{
+	globalEventHandler := &GlobalEventHandler{
 		[]EventHandler{
-			NewCommandsHandler(webAPI, repo, adminUsers),
+			NewCommandsHandler(webAPI, soupRepository, scoreRepository, adminUsers),
 		},
 	}
 
@@ -35,11 +36,11 @@ func AddRoute(verificationToken string, baseURL string, accessToken string, repo
 		r.Methods("POST").
 			Name("Slack").
 			Path("/slack/event").
-			HandlerFunc(slackHandlerFunc(verificationToken, globalEventHandler))
+			HandlerFunc(createSlackHandlerFunc(verificationToken, globalEventHandler))
 	}
 }
 
-func slackHandlerFunc(verificationToken string, eventHandler EventHandler) func(w http.ResponseWriter, r *http.Request) {
+func createSlackHandlerFunc(verificationToken string, eventHandler EventHandler) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		event := &EventCallback{}
 		if err := json.NewDecoder(r.Body).Decode(event); err != nil {
