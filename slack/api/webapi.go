@@ -8,10 +8,20 @@ import (
 )
 
 type (
+	slackWebAPI struct {
+		baseURL     string
+		accessToken string
+		httpClient  HTTPClient
+	}
+
 	// SlackWebAPI simplifies interactions with Slack's web api, see <a href="https://api.slack.com/web" />
-	SlackWebAPI struct {
-		BaseURL     string
-		AccessToken string
+	SlackWebAPI interface {
+		PostMessage(message *PostMessage) (*http.Response, error)
+	}
+
+	// HTTPClient defines a means to invoke http requests
+	HTTPClient interface {
+		Do(req *http.Request) (*http.Response, error)
 	}
 
 	// PostMessage struct is the data transfer object available for the chat.postMessage method
@@ -23,25 +33,34 @@ type (
 	}
 )
 
+// NewSlackWebAPI creates a new SlackWebApi
+func NewSlackWebAPI(baseURL string, accessToken string, httpClient HTTPClient) SlackWebAPI {
+	var swa SlackWebAPI = &slackWebAPI{
+		baseURL,
+		accessToken,
+		httpClient,
+	}
+	return swa
+}
+
 // PostMessage invokes the chat.postMessage method of the Slack web api
-func (api *SlackWebAPI) PostMessage(message *PostMessage) (*http.Response, error) {
+func (api *slackWebAPI) PostMessage(message *PostMessage) (*http.Response, error) {
 	return api.send("chat.postMessage", message)
 }
 
-func (api *SlackWebAPI) send(action string, v interface{}) (*http.Response, error) {
+func (api *slackWebAPI) send(action string, v interface{}) (*http.Response, error) {
 	jsonValue, err := json.Marshal(v)
 	if err != nil {
 		return nil, err
 	}
 
-	request, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", api.BaseURL, action), bytes.NewReader(jsonValue))
+	request, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", api.baseURL, action), bytes.NewReader(jsonValue))
 	if err != nil {
 		return nil, err
 	}
 
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", api.AccessToken))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", api.accessToken))
 	request.Header.Set("Content-type", "application/json; charset=utf-8")
 
-	client := &http.Client{}
-	return client.Do(request)
+	return api.httpClient.Do(request)
 }

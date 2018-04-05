@@ -17,10 +17,19 @@ type (
 		Score   int
 		Comment string
 	}
+
+	rateCommand struct {
+		repo score.Repository
+	}
 )
 
-// Rate command function for the rate command used to submit soup scores
-func Rate(args []string, output io.Writer) {
+// NewRateCommand create a new rate command
+func NewRateCommand(repo score.Repository) Command {
+	var rateCmd Command = &rateCommand{repo}
+	return rateCmd
+}
+
+func (c *rateCommand) Execute(args []string, output io.Writer) {
 	flags, err := extractRateFlags(args, output)
 	if err != nil {
 		fmt.Fprintln(output, err.Error())
@@ -32,8 +41,7 @@ func Rate(args []string, output io.Writer) {
 		return
 	}
 
-	repo := score.Repository{} // TODO: inject... somehow...
-	err = repo.SaveScore(&dbctx.Score{
+	err = c.repo.SaveScore(&dbctx.Score{
 		Score:   flags.Score,
 		Comment: flags.Comment,
 	})
@@ -44,6 +52,10 @@ func Rate(args []string, output io.Writer) {
 	} else {
 		fmt.Fprintln(output, "Thank you for your soup rating!")
 	}
+}
+
+func (c *rateCommand) RequiresAdmin() bool {
+	return false
 }
 
 func extractRateFlags(args []string, output io.Writer) (*rateFlags, error) {

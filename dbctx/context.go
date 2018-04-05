@@ -3,7 +3,6 @@ package dbctx
 import (
 	"fmt"
 	"regexp"
-	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres" // Import postgres dialect for GORM.
@@ -14,50 +13,42 @@ var (
 )
 
 type (
-	// Soup holds soup metadata
-	Soup struct {
-		gorm.Model
-		Name string `gorm:"unique_index"`
+	connectionFactory struct {
+		databaseURL string
 	}
 
-	// SoupOfTheDay holds information rega
-	SoupOfTheDay struct {
-		gorm.Model
-		date time.Time `sql:"type:date;unique_index;DEFAULT:current_date"`
-		Soup *Soup
-	}
-
-	// Score holds information submitted by users regarding the soup of the day
-	Score struct {
-		gorm.Model
-		Score        int
-		Comment      string
-		SoupOfTheDay *SoupOfTheDay
+	// ConnectionFactory encapsulates gorm database access
+	ConnectionFactory interface {
+		Open() (db *gorm.DB, err error)
 	}
 )
 
-// Open returns an open database connection.
-func Open() (db *gorm.DB, err error) {
-	return gorm.Open("postgres", databaseURL)
+// NewConnectionFactory is used to create a factory to create DB connections
+func NewConnectionFactory(connectionString *string) (ConnectionFactory, error) {
+	var err error
+	databaseURL, err = normalizeDatabaseURL(connectionString)
+	if err != nil {
+		return nil, err
+	}
+
+	connection, err := gorm.Open("postgres", databaseURL)
+	if err != nil {
+		return nil, err
+	}
+	defer connection.Close()
+
+	connection.AutoMigrate(&Soup{}, &SoupOfTheDay{}, &Score{})
+
+	var connFactory ConnectionFactory = &connectionFactory{
+		databaseURL: databaseURL,
+	}
+
+	return connFactory, nil
 }
 
-// Init - call to migrate the database and enable the use of the Open function.
-func Init(database *string) error {
-	var err error
-	databaseURL, err = normalizeDatabaseURL(database)
-	if err != nil {
-		return err
-	}
-
-	db, err := Open()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	db.AutoMigrate(&Soup{}, &SoupOfTheDay{}, &Score{})
-
-	return nil
+// Open returns an open database connection.
+func (cf *connectionFactory) Open() (db *gorm.DB, err error) {
+	return gorm.Open("postgres", cf.databaseURL)
 }
 
 func normalizeDatabaseURL(databaseURL *string) (string, error) {

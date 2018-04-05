@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/sjuls/soup-ranking/score"
+
 	"github.com/gorilla/mux"
 	"github.com/sjuls/soup-ranking/slack/api"
 	"github.com/sjuls/soup-ranking/utils"
@@ -21,17 +23,11 @@ type (
 )
 
 // AddRoute - adds a slack event route which accepts event with the given token
-func AddRoute(verificationToken string, baseURL string, accessToken string, adminUsers []string) func(r *mux.Router) {
-	webAPI := api.SlackWebAPI{
-		BaseURL:     baseURL,
-		AccessToken: accessToken,
-	}
+func AddRoute(verificationToken string, baseURL string, accessToken string, repo score.Repository, adminUsers []string) func(r *mux.Router) {
+	webAPI := api.NewSlackWebAPI(baseURL, accessToken, &http.Client{})
 	var globalEventHandler EventHandler = &GlobalEventHandler{
 		[]EventHandler{
-			EventHandler(&CommandsHandler{
-				&webAPI,
-				adminUsers,
-			}),
+			NewCommandsHandler(webAPI, repo, adminUsers),
 		},
 	}
 

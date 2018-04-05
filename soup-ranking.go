@@ -29,15 +29,26 @@ func main() {
 	slackBaseURL := os.Getenv("SLACK_BASEURL")
 	slackAdminUsers := os.Getenv("SLACK_ADMIN_USERS")
 
-	if err := dbctx.Init(&database); err != nil {
+	connFactory, err := dbctx.NewConnectionFactory(&database)
+	if err != nil {
 		panic(err)
 	}
+
+	scoreRepository := score.NewRepository(connFactory)
 
 	router := mux.NewRouter().StrictSlash(true)
 	routes := []func(router *mux.Router){
 		status.AddRoute,
-		score.AddRoute,
-		slack.AddRoute(slackVerificationToken, slackBaseURL, slackAccessToken, strings.Split(slackAdminUsers, ",")),
+		score.AddRoute(
+			scoreRepository,
+		),
+		slack.AddRoute(
+			slackVerificationToken,
+			slackBaseURL,
+			slackAccessToken,
+			scoreRepository,
+			strings.Split(slackAdminUsers, ","),
+		),
 	}
 
 	registerRoutes(router, routes)

@@ -7,15 +7,29 @@ import (
 )
 
 type (
-	// Manager provides access to methods to handle scores
-	Repository struct {
+	scoreRepository struct {
+		connFactory dbctx.ConnectionFactory
+	}
+
+	// Repository gives access to methods used to persist and query scores
+	Repository interface {
+		GetScores() (*[]dbctx.Score, error)
+		SaveScore(score *dbctx.Score) error
 	}
 )
 
+// NewRepository creates a new repository
+func NewRepository(connFactory dbctx.ConnectionFactory) Repository {
+	var repo Repository = &scoreRepository{
+		connFactory,
+	}
+	return repo
+}
+
 // GetScores retrieves the total combined scores.
 // TODO: Remove and replace with something more usable.
-func (m *Repository) GetScores() (*[]dbctx.Score, error) {
-	db, err := dbctx.Open()
+func (r *scoreRepository) GetScores() (*[]dbctx.Score, error) {
+	db, err := r.connFactory.Open()
 	if err != nil {
 		return nil, err
 	}
@@ -29,8 +43,8 @@ func (m *Repository) GetScores() (*[]dbctx.Score, error) {
 }
 
 // SaveScore saves a score to the soup of the day
-func (m *Repository) SaveScore(score *dbctx.Score) error {
-	db, err := dbctx.Open()
+func (r *scoreRepository) SaveScore(score *dbctx.Score) error {
+	db, err := r.connFactory.Open()
 	if err != nil {
 		return err
 	}

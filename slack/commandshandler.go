@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/sjuls/soup-ranking/score"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/sjuls/soup-ranking/slack/api"
 	"github.com/sjuls/soup-ranking/slack/commands"
@@ -15,8 +17,9 @@ import (
 type (
 	// CommandsHandler handles admin commands received through Slack events
 	CommandsHandler struct {
-		WebAPI     *api.SlackWebAPI
-		AdminUsers []string
+		webAPI             api.SlackWebAPI
+		adminUsers         []string
+		registeredCommands map[string]commands.Command
 	}
 )
 
@@ -24,15 +27,21 @@ const (
 	maxFlags = 25 // Maximum number of flags that will be extracted
 )
 
-var (
-	registeredCommands = map[string]func(flags []string, output io.Writer){
-		"soup": commands.Soup,
-		"rate": commands.Rate,
+// NewCommandsHandler create a new commandshandler
+func NewCommandsHandler(webAPI api.SlackWebAPI, repo score.Repository, adminUsers []string) EventHandler {
+	commands := map[string]commands.Command{
+		"today": commands.NewTodayCommand(),
+		"rate":  commands.NewRateCommand(repo),
 	}
-	adminCommands = []string{
-		"soup",
+
+	var handler EventHandler = &CommandsHandler{
+		webAPI,
+		adminUsers,
+		commands,
 	}
-)
+
+	return handler
+}
 
 // HandleEvent handles events delegated to AdminHandler
 func (h *CommandsHandler) HandleEvent(event *EventCallback) {
@@ -70,22 +79,20 @@ func (h *CommandsHandler) HandleEvent(event *EventCallback) {
 		AsUser:  true,
 	}
 
-	if _, err := h.WebAPI.PostMessage(&message); err != nil {
+	if _, err := h.webAPI.PostMessage(&message); err != nil {
 		panic(err)
 	}
 }
 
 func (h *CommandsHandler) isAuthorized(commandName string, user string) bool {
-	for _, adminCommand := range adminCommands {
-		if adminCommand == commandName {
-			return h.isAdminUser(user)
-		}
+	if h.registeredCommands[commandName].RequiresAdmin() {
+		return h.isAdminUser(user)
 	}
 	return true
 }
 
 func (h *CommandsHandler) isAdminUser(user string) bool {
-	for _, adminUser := range h.AdminUsers {
+	for _, adminUser := range h.adminUsers {
 		if adminUser == user {
 			return true
 		}
@@ -94,8 +101,8 @@ func (h *CommandsHandler) isAdminUser(user string) bool {
 }
 
 func (h *CommandsHandler) executeCommand(commandName string, flags []string, output io.Writer) {
-	if command := registeredCommands[commandName]; command != nil {
-		command(flags, output)
+	if command := h.registeredCommands[commandName]; command != nil {
+		command.Execute(flags, output)
 	}
 }
 
