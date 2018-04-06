@@ -8,6 +8,7 @@ import (
 
 var (
 	allowedOrigins = []string{
+		"http://localhost:*",
 		"https://junesoup.surge.sh",
 		"http://junesoup.surge.sh",
 		"https://soup-ranking.herokuapp.com",
