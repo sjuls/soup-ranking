@@ -23,7 +23,8 @@ type (
 )
 
 const (
-	maxFlags = 25 // Maximum number of flags that will be extracted
+	maxFlags     = 25 // Maximum number of flags that will be extracted
+	usageCommand = "usage"
 )
 
 // NewCommandsHandler create a new commandshandler
@@ -34,8 +35,9 @@ func NewCommandsHandler(
 	adminUsers []string,
 ) EventHandler {
 	commands := map[string]commands.Command{
-		"today": commands.NewTodayCommand(soupRepository),
-		"rate":  commands.NewRateCommand(scoreRepository),
+		"today":     commands.NewTodayCommand(soupRepository),
+		"set-today": commands.NewSetTodayCommand(soupRepository),
+		"rate":      commands.NewRateCommand(scoreRepository),
 	}
 
 	return &commandsHandler{
@@ -51,27 +53,30 @@ func (h *commandsHandler) HandleEvent(event *EventCallback) {
 		return
 	}
 
+	output := bytes.NewBuffer([]byte{})
 	innerEvent := MessageEvent{}
 	if err := mapstructure.Decode(event.Event, &innerEvent); err != nil {
 		panic(err)
 	}
 
-	cmdRegex, _ := regexp.Compile(fmt.Sprintf("^\\s*(?:<@(?:%s)>)\\s+(\\S+)\\s+(.*)$", strings.Join(event.AuthedUsers, "|")))
+	cmdRegex, _ := regexp.Compile(fmt.Sprintf("^\\s*(?:<@(?:%s)>)\\s+(\\S+)\\s?(.*)$", strings.Join(event.AuthedUsers, "|")))
 	cmdMatches := cmdRegex.FindStringSubmatch(innerEvent.Text)
 
-	if len(cmdMatches) < 3 {
+	if len(cmdMatches) < 2 {
 		return
 	}
 
-	flagRegex, _ := regexp.Compile("([^\\s\"]+)|\"([^\"]+)\"")
-	flags := extractFlags(flagRegex.FindAllStringSubmatch(cmdMatches[2], maxFlags))
-
 	commandName := strings.ToLower(cmdMatches[1])
 
-	output := bytes.NewBuffer([]byte{})
-	fmt.Fprintln(output, flagRegex.FindAllStringSubmatch(cmdMatches[2], maxFlags))
-	if h.isAuthorized(commandName, innerEvent.User) {
-		h.executeCommand(commandName, flags, output)
+	var args string
+	if len(cmdMatches) == 3 {
+		args = strings.TrimSpace(cmdMatches[2])
+	}
+
+	if commandName == usageCommand {
+		h.Usage(output, innerEvent.User)
+	} else if h.isAuthorized(commandName, innerEvent.User) {
+		h.executeCommand(commandName, args, output)
 	} else {
 		fmt.Fprintf(output, "Sorry <@%s>, you're not authorized to invoke that command.", innerEvent.User)
 	}
@@ -84,6 +89,16 @@ func (h *commandsHandler) HandleEvent(event *EventCallback) {
 
 	if _, err := h.webAPI.PostMessage(&message); err != nil {
 		panic(err)
+	}
+}
+
+func (h *commandsHandler) Usage(output io.Writer, user string) {
+	fmt.Fprintf(output, "Hello <@%s>, here's a list of the commands available to you - enjoy!\n\n", user)
+	for _, command := range h.registeredCommands {
+		if command.RequiresAdmin() && !h.isAdminUser(user) {
+			continue
+		}
+		fmt.Fprintln(output, command.Usage())
 	}
 }
 
@@ -103,18 +118,10 @@ func (h *commandsHandler) isAdminUser(user string) bool {
 	return false
 }
 
-func (h *commandsHandler) executeCommand(commandName string, flags []string, output io.Writer) {
+func (h *commandsHandler) executeCommand(commandName string, args string, output io.Writer) {
 	if command := h.registeredCommands[commandName]; command != nil {
-		command.Execute(flags, output)
+		command.Execute(args, output)
 	}
-}
-
-func extractFlags(flagMatches [][]string) []string {
-	flags := make([]string, len(flagMatches))
-	for i, flag := range flagMatches {
-		flags[i] = flag[1]
-	}
-	return flags
 }
 
 func shouldHandle(event *EventCallback) bool {

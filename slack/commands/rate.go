@@ -1,13 +1,12 @@
 package commands
 
 import (
-	"flag"
 	"fmt"
 	"io"
+	"regexp"
+	"strconv"
 
 	"github.com/sjuls/soup-ranking/dbctx"
-
-	"github.com/sjuls/soup-ranking/utils"
 )
 
 type (
@@ -26,30 +25,38 @@ func NewRateCommand(repo dbctx.ScoreRepository) Command {
 	return &rateCommand{repo}
 }
 
-func (c *rateCommand) Execute(args []string, output io.Writer) {
-	flags, err := extractRateFlags(args, output)
+func (c *rateCommand) Execute(args string, output io.Writer) {
+	rateMatcher, err := regexp.Compile("([1-9]|10)\\s(.*)")
 	if err != nil {
 		fmt.Fprintln(output, err.Error())
 		return
 	}
 
-	if 1 > flags.Score || flags.Score > 10 {
-		fmt.Fprintln(output, "Score should be between 1 and 10")
+	rateMatches := rateMatcher.FindStringSubmatch(args)
+	scoreValue, err := strconv.ParseInt(rateMatches[1], 10, 32)
+
+	if err != nil {
+		fmt.Fprintln(output, err.Error())
+		return
+	}
+
+	if scoreValue < 1 || 10 < scoreValue {
+		fmt.Fprintln(output, "Score must be between 1 and 10")
 		return
 	}
 
 	score := dbctx.Score{
-		Score: flags.Score,
+		Score: int(scoreValue),
 	}
 
-	if len(flags.Comment) > 0 {
-		score.Comment = flags.Comment
+	if len(args) > 2 {
+		score.Comment = rateMatches[2]
 	}
 
 	err = c.repo.SaveScore(&score)
 
 	if err != nil {
-		fmt.Fprintf(output, "An error has occurred: %s", err.Error())
+		fmt.Fprintln(output, err.Error())
 	} else {
 		fmt.Fprintln(output, "Thank you for your soup rating!")
 	}
@@ -59,16 +66,6 @@ func (c *rateCommand) RequiresAdmin() bool {
 	return false
 }
 
-func extractRateFlags(args []string, output io.Writer) (*rateFlags, error) {
-	flags := rateFlags{}
-	config := func(flagset *flag.FlagSet) {
-		flagset.IntVar(&flags.Score, "score", 0, "Choose a score from 1 to 10.")
-		flagset.StringVar(&flags.Comment, "comment", "", "Textual comment in case the score isn't enough for you.")
-	}
-
-	if err := utils.ParseArguments("rate", args, config, output); err != nil {
-		return nil, err
-	}
-
-	return &flags, nil
+func (c *rateCommand) Usage() string {
+	return "`<@soupbot> rate <score 1 to 10> <optional comment>` Rate the soup of the day, optionally include a comment."
 }

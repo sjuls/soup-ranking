@@ -7,8 +7,10 @@ import (
 type (
 	// Command which can be executed
 	Command interface {
-		Execute(args []string, writer io.Writer)
+		Execute(args string, writer io.Writer)
 
 		RequiresAdmin() bool
+
+		Usage() string
 	}
 )

@@ -14,6 +14,7 @@ type (
 	SoupRepository interface {
 		// SetSoup sets the soup of the day
 		SetSoup(name string) error
+		GetSoupOfTheDay() (*SoupOfTheDay, error)
 	}
 )
 
@@ -40,6 +41,19 @@ func (m *soupRepository) SetSoup(name string) error {
 
 	tx.Commit()
 	return tx.Error
+}
+
+func (m *soupRepository) GetSoupOfTheDay() (*SoupOfTheDay, error) {
+	db, err := m.connFactory.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	tx := db.Begin()
+	soupOfTheDay := getCreateSoupOfTheDay(tx)
+	tx.Commit()
+	return soupOfTheDay, tx.Error
 }
 
 // getCreateSoupOfTheDay returns the soup of the day, pass DB or transaction to be used to extract the data.

@@ -1,19 +1,13 @@
 package commands
 
 import (
-	"flag"
 	"fmt"
 	"io"
 
 	"github.com/sjuls/soup-ranking/dbctx"
-	"github.com/sjuls/soup-ranking/utils"
 )
 
 type (
-	todayFlags struct {
-		Name string
-	}
-
 	todayCommand struct {
 		repo dbctx.SoupRepository
 	}
@@ -26,34 +20,19 @@ func NewTodayCommand(repo dbctx.SoupRepository) Command {
 	}
 }
 
-func (c *todayCommand) Execute(args []string, output io.Writer) {
-	flags, err := extractTodayFlags(args, output)
-	if err != nil {
-		return
-	}
-
-	err = c.repo.SetSoup(flags.Name)
-
+func (c *todayCommand) Execute(args string, output io.Writer) {
+	soupOfTheDay, err := c.repo.GetSoupOfTheDay()
 	if err != nil {
 		fmt.Fprintln(output, err.Error())
 	} else {
-		fmt.Fprintf(output, "Roger, admin. Soup of the day is now set to '%s'.", flags.Name)
+		fmt.Fprintf(output, "The soup of the day is: %s.", soupOfTheDay.Soup.Name)
 	}
 }
 
 func (c *todayCommand) RequiresAdmin() bool {
-	return true
+	return false
 }
 
-func extractTodayFlags(args []string, output io.Writer) (*todayFlags, error) {
-	flags := todayFlags{}
-	config := func(flagset *flag.FlagSet) {
-		flagset.StringVar(&flags.Name, "name", "Unknown soup", "Set the name of the soup of the day")
-	}
-
-	if err := utils.ParseArguments("today", args, config, output); err != nil {
-		return nil, err
-	}
-
-	return &flags, nil
+func (c *todayCommand) Usage() string {
+	return "`<@soupbot> today` Returns the soup of the day"
 }
