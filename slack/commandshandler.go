@@ -7,9 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/sjuls/soup-ranking/soup"
-
-	"github.com/sjuls/soup-ranking/score"
+	"github.com/sjuls/soup-ranking/dbctx"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/sjuls/soup-ranking/slack/api"
@@ -31,8 +29,8 @@ const (
 // NewCommandsHandler create a new commandshandler
 func NewCommandsHandler(
 	webAPI api.SlackWebAPI,
-	soupRepository soup.Repository,
-	scoreRepository score.Repository,
+	soupRepository dbctx.SoupRepository,
+	scoreRepository dbctx.ScoreRepository,
 	adminUsers []string,
 ) EventHandler {
 	commands := map[string]commands.Command{
@@ -71,6 +69,7 @@ func (h *commandsHandler) HandleEvent(event *EventCallback) {
 	commandName := strings.ToLower(cmdMatches[1])
 
 	output := bytes.NewBuffer([]byte{})
+	fmt.Fprintln(output, flagRegex.FindAllStringSubmatch(cmdMatches[2], maxFlags))
 	if h.isAuthorized(commandName, innerEvent.User) {
 		h.executeCommand(commandName, flags, output)
 	} else {

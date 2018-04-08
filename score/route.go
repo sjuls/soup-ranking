@@ -20,7 +20,7 @@ type scoreDto struct {
 
 // AddRoute - Adds routes to the provided router
 // to enable addition and fetching of soup scores
-func AddRoute(repo Repository) func(r *mux.Router) {
+func AddRoute(repo dbctx.ScoreRepository) func(r *mux.Router) {
 	return func(r *mux.Router) {
 		r.Methods("GET").
 			Name("Get score").
@@ -34,7 +34,7 @@ func AddRoute(repo Repository) func(r *mux.Router) {
 	}
 }
 
-func createGetScoresHandlerFunc(repo Repository) func(w http.ResponseWriter, r *http.Request) {
+func createGetScoresHandlerFunc(repo dbctx.ScoreRepository) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		scores, err := repo.GetScores()
 		if err != nil {
@@ -46,7 +46,7 @@ func createGetScoresHandlerFunc(repo Repository) func(w http.ResponseWriter, r *
 	}
 }
 
-func createPostScoreHandlerFunc(repo Repository) func(w http.ResponseWriter, r *http.Request) {
+func createPostScoreHandlerFunc(repo dbctx.ScoreRepository) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		score := &scoreDto{}
 		if err := json.NewDecoder(r.Body).Decode(score); err != nil {

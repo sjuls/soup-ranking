@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/sjuls/soup-ranking/soup"
+	"github.com/sjuls/soup-ranking/dbctx"
 	"github.com/sjuls/soup-ranking/utils"
 )
 
@@ -15,12 +15,12 @@ type (
 	}
 
 	todayCommand struct {
-		repo soup.Repository
+		repo dbctx.SoupRepository
 	}
 )
 
 // NewTodayCommand create a new today command
-func NewTodayCommand(repo soup.Repository) Command {
+func NewTodayCommand(repo dbctx.SoupRepository) Command {
 	return &todayCommand{
 		repo,
 	}
@@ -37,7 +37,7 @@ func (c *todayCommand) Execute(args []string, output io.Writer) {
 	if err != nil {
 		fmt.Fprintln(output, err.Error())
 	} else {
-		fmt.Fprintf(output, "Roger. Soup of the day is now set to '%s'.", flags.Name)
+		fmt.Fprintf(output, "Roger, admin. Soup of the day is now set to '%s'.", flags.Name)
 	}
 }
 

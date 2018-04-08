@@ -4,11 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/sjuls/soup-ranking/dbctx"
 
-	"github.com/sjuls/soup-ranking/score"
 	"github.com/sjuls/soup-ranking/utils"
 )
 
@@ -19,12 +17,12 @@ type (
 	}
 
 	rateCommand struct {
-		repo score.Repository
+		repo dbctx.ScoreRepository
 	}
 )
 
 // NewRateCommand create a new rate command
-func NewRateCommand(repo score.Repository) Command {
+func NewRateCommand(repo dbctx.ScoreRepository) Command {
 	return &rateCommand{repo}
 }
 
@@ -40,14 +38,18 @@ func (c *rateCommand) Execute(args []string, output io.Writer) {
 		return
 	}
 
-	err = c.repo.SaveScore(&dbctx.Score{
-		Score:   flags.Score,
-		Comment: flags.Comment,
-	})
+	score := dbctx.Score{
+		Score: flags.Score,
+	}
+
+	if len(flags.Comment) > 0 {
+		score.Comment = flags.Comment
+	}
+
+	err = c.repo.SaveScore(&score)
 
 	if err != nil {
-		log.Println(err.Error())
-		fmt.Fprintln(output, "An error has occurred.")
+		fmt.Fprintf(output, "An error has occurred: %s", err.Error())
 	} else {
 		fmt.Fprintln(output, "Thank you for your soup rating!")
 	}
@@ -61,7 +63,7 @@ func extractRateFlags(args []string, output io.Writer) (*rateFlags, error) {
 	flags := rateFlags{}
 	config := func(flagset *flag.FlagSet) {
 		flagset.IntVar(&flags.Score, "score", 0, "Choose a score from 1 to 10.")
-		flagset.StringVar(&flags.Comment, "comment", "No comment", "Textual comment in case the score isn't enough for you.")
+		flagset.StringVar(&flags.Comment, "comment", "", "Textual comment in case the score isn't enough for you.")
 	}
 
 	if err := utils.ParseArguments("rate", args, config, output); err != nil {

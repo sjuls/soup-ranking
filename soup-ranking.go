@@ -11,7 +11,6 @@ import (
 	"github.com/sjuls/soup-ranking/middleware"
 	"github.com/sjuls/soup-ranking/score"
 	"github.com/sjuls/soup-ranking/slack"
-	"github.com/sjuls/soup-ranking/soup"
 	"github.com/sjuls/soup-ranking/status"
 )
 
@@ -35,8 +34,8 @@ func main() {
 		panic(err)
 	}
 
-	soupRepository := soup.NewRepository(connFactory)
-	scoreRepository := score.NewRepository(connFactory)
+	soupRepository := dbctx.NewSoupRepository(connFactory)
+	scoreRepository := dbctx.NewScoreRepository(connFactory)
 
 	router := mux.NewRouter().StrictSlash(true)
 	routes := []func(router *mux.Router){
