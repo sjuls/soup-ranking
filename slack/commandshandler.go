@@ -40,13 +40,11 @@ func NewCommandsHandler(
 		"rate":  commands.NewRateCommand(scoreRepository),
 	}
 
-	var handler EventHandler = &commandsHandler{
+	return &commandsHandler{
 		webAPI,
 		adminUsers,
 		commands,
 	}
-
-	return handler
 }
 
 // HandleEvent handles events delegated to AdminHandler

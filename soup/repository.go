@@ -19,11 +19,11 @@ type (
 
 // NewRepository creates a new repository
 func NewRepository(connFactory dbctx.ConnectionFactory) Repository {
-	var repo Repository = &soupRepository{
+	return &soupRepository{
 		connFactory,
 	}
-	return repo
 }
+
 func (m *soupRepository) SetSoup(name string) error {
 	db, err := m.connFactory.Open()
 	if err != nil {

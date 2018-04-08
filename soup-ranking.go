@@ -35,8 +35,8 @@ func main() {
 		panic(err)
 	}
 
-	scoreRepository := score.NewRepository(connFactory)
 	soupRepository := soup.NewRepository(connFactory)
+	scoreRepository := score.NewRepository(connFactory)
 
 	router := mux.NewRouter().StrictSlash(true)
 	routes := []func(router *mux.Router){
@@ -48,6 +48,7 @@ func main() {
 			slackVerificationToken,
 			slackBaseURL,
 			slackAccessToken,
+			soupRepository,
 			scoreRepository,
 			strings.Split(slackAdminUsers, ","),
 		),

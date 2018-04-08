@@ -25,8 +25,7 @@ type (
 
 // NewRateCommand create a new rate command
 func NewRateCommand(repo score.Repository) Command {
-	var rateCmd Command = &rateCommand{repo}
-	return rateCmd
+	return &rateCommand{repo}
 }
 
 func (c *rateCommand) Execute(args []string, output io.Writer) {

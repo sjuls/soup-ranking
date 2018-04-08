@@ -21,10 +21,9 @@ type (
 
 // NewTodayCommand create a new today command
 func NewTodayCommand(repo soup.Repository) Command {
-	var todayCmd Command = &todayCommand{
+	return &todayCommand{
 		repo,
 	}
-	return todayCmd
 }
 
 func (c *todayCommand) Execute(args []string, output io.Writer) {

@@ -53,7 +53,7 @@ func (r *scoreRepository) SaveScore(score *dbctx.Score) error {
 	tx := db.Begin()
 
 	soupOfTheDay := &dbctx.SoupOfTheDay{}
-	tx.Where("date=DATE(?)", time.Now()).FirstOrCreate(&soupOfTheDay, dbctx.SoupOfTheDay{})
+	tx.Where("day=DATE(?)", time.Now()).FirstOrCreate(&soupOfTheDay, dbctx.SoupOfTheDay{})
 	score.SoupOfTheDay = soupOfTheDay
 
 	tx.Save(soupOfTheDay)

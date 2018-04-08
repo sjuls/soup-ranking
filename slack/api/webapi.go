@@ -35,12 +35,11 @@ type (
 
 // NewSlackWebAPI creates a new SlackWebApi
 func NewSlackWebAPI(baseURL string, accessToken string, httpClient HTTPClient) SlackWebAPI {
-	var swa SlackWebAPI = &slackWebAPI{
+	return &slackWebAPI{
 		baseURL,
 		accessToken,
 		httpClient,
 	}
-	return swa
 }
 
 // PostMessage invokes the chat.postMessage method of the Slack web api

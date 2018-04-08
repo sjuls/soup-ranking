@@ -13,10 +13,10 @@ type (
 		Name string `gorm:"unique_index"`
 	}
 
-	// SoupOfTheDay holds information rega
+	// SoupOfTheDay holds information regarding the soup of the day
 	SoupOfTheDay struct {
 		gorm.Model
-		date time.Time `sql:"type:date;unique_index;DEFAULT:current_date"`
+		day  time.Time `sql:"type:date;DEFAULT:current_date"`
 		Soup *Soup
 	}
 
