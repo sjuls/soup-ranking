@@ -29,6 +29,6 @@ type (
 		Score          int
 		Comment        string
 		SoupOfTheDayID uint
-		SoupOfTheDay   SoupOfTheDay `gorm:"not_null"`
+		SoupOfTheDay   SoupOfTheDay
 	}
 )

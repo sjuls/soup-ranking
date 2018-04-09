@@ -62,7 +62,7 @@ func createSlackHandlerFunc(verificationToken string, eventHandler EventHandler)
 
 		if event.Type == challengeType {
 			log.Println("Slack challenge received!")
-			utils.JSON(w, challengeResponse{event.Challenge})
+			utils.WriteJSON(w, challengeResponse{event.Challenge})
 			return
 		}
 

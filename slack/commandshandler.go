@@ -74,6 +74,7 @@ func (h *commandsHandler) HandleEvent(event *EventCallback) {
 	}
 
 	if commandName == usageCommand {
+		fmt.Fprintf(output, "Hello <@%s>, here's a list of the commands available to you - enjoy!\n\n", innerEvent.User)
 		h.Usage(output, innerEvent.User)
 	} else if h.isAuthorized(commandName, innerEvent.User) {
 		h.executeCommand(commandName, args, output)
@@ -93,17 +94,15 @@ func (h *commandsHandler) HandleEvent(event *EventCallback) {
 }
 
 func (h *commandsHandler) Usage(output io.Writer, user string) {
-	fmt.Fprintf(output, "Hello <@%s>, here's a list of the commands available to you - enjoy!\n\n", user)
 	for _, command := range h.registeredCommands {
-		if command.RequiresAdmin() && !h.isAdminUser(user) {
-			continue
+		if !command.RequiresAdmin() || h.isAdminUser(user) {
+			fmt.Fprintln(output, command.Usage())
 		}
-		fmt.Fprintln(output, command.Usage())
 	}
 }
 
 func (h *commandsHandler) isAuthorized(commandName string, user string) bool {
-	if h.registeredCommands[commandName].RequiresAdmin() {
+	if command, ok := h.registeredCommands[commandName]; ok && command.RequiresAdmin() {
 		return h.isAdminUser(user)
 	}
 	return true
@@ -119,8 +118,10 @@ func (h *commandsHandler) isAdminUser(user string) bool {
 }
 
 func (h *commandsHandler) executeCommand(commandName string, args string, output io.Writer) {
-	if command := h.registeredCommands[commandName]; command != nil {
+	if command, ok := h.registeredCommands[commandName]; ok {
 		command.Execute(args, output)
+	} else {
+		fmt.Fprintf(output, "Sorry, I didn't recognize command '%s'. Please ask for 'usage' to see the available commands.", commandName)
 	}
 }
 

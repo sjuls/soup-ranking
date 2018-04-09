@@ -24,5 +24,5 @@ func statusHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		"I am ALIVE!",
 	}
 
-	utils.JSON(w, status)
+	utils.WriteJSON(w, status)
 }

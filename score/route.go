@@ -42,7 +42,15 @@ func createGetScoresHandlerFunc(repo dbctx.ScoreRepository) func(w http.Response
 			return
 		}
 
-		utils.JSON(w, scores)
+		dtos := make([]scoreDto, len(*scores))
+		for i, score := range *scores {
+			dtos[i] = scoreDto{
+				Score:   score.Score,
+				Comment: score.Comment,
+			}
+		}
+
+		utils.WriteJSON(w, &dtos)
 	}
 }
 

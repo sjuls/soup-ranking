@@ -35,7 +35,7 @@ func (m *soupRepository) SetSoup(name string) error {
 	tx := db.Begin()
 
 	soupOfTheDay := getCreateSoupOfTheDay(tx)
-	soupOfTheDay.Soup = *getSoup(&name, tx)
+	soupOfTheDay.Soup = *getSoup(name, tx)
 
 	tx.Save(soupOfTheDay)
 
@@ -60,24 +60,24 @@ func (m *soupRepository) GetSoupOfTheDay() (*SoupOfTheDay, error) {
 func getCreateSoupOfTheDay(tx *gorm.DB) *SoupOfTheDay {
 	soupOfTheDay := SoupOfTheDay{}
 	today := time.Now().Truncate(24 * time.Hour)
-	tx.FirstOrCreate(&soupOfTheDay, SoupOfTheDay{Date: &today})
+	tx.Preload("Soup").FirstOrCreate(&soupOfTheDay, SoupOfTheDay{Date: &today})
 
-	if &soupOfTheDay.Soup == nil {
-		soupOfTheDay.Soup = *getSoup(nil, tx)
+	if soupOfTheDay.Soup.Name == "" {
+		soupOfTheDay.Soup = *getSoup("", tx)
 	}
 
 	return &soupOfTheDay
 }
 
 // getSoup get soup with the given name - gets the unknown soup if name is nil
-func getSoup(name *string, tx *gorm.DB) *Soup {
+func getSoup(name string, tx *gorm.DB) *Soup {
 	soup := Soup{}
 
-	if name == nil {
+	if name == "" {
 		newName := "Unknown soup"
-		name = &newName
+		name = newName
 	}
 
-	tx.FirstOrCreate(&soup, Soup{Name: *name})
+	tx.FirstOrCreate(&soup, Soup{Name: name})
 	return &soup
 }

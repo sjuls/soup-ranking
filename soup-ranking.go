@@ -11,6 +11,7 @@ import (
 	"github.com/sjuls/soup-ranking/middleware"
 	"github.com/sjuls/soup-ranking/score"
 	"github.com/sjuls/soup-ranking/slack"
+	"github.com/sjuls/soup-ranking/soup"
 	"github.com/sjuls/soup-ranking/status"
 )
 
@@ -29,7 +30,7 @@ func main() {
 	slackBaseURL := os.Getenv("SLACK_BASEURL")
 	slackAdminUsers := os.Getenv("SLACK_ADMIN_USERS")
 
-	connFactory, err := dbctx.NewConnectionFactory(&database)
+	connFactory, err := dbctx.NewConnectionFactory(database)
 	if err != nil {
 		panic(err)
 	}
@@ -40,6 +41,9 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	routes := []func(router *mux.Router){
 		status.AddRoute,
+		soup.AddRoute(
+			soupRepository,
+		),
 		score.AddRoute(
 			scoreRepository,
 		),

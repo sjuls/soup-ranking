@@ -6,15 +6,12 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres" // Import postgres dialect for GORM.
-)
-
-var (
-	databaseURL string
+	_ "github.com/jinzhu/gorm/dialects/sqlite"   // Import sqlit dialect for GORM.
 )
 
 type (
 	connectionFactory struct {
-		databaseURL string
+		connectionBuilder func() (*gorm.DB, error)
 	}
 
 	// ConnectionFactory encapsulates gorm database access
@@ -24,31 +21,58 @@ type (
 )
 
 // NewConnectionFactory is used to create a factory to create DB connections
-func NewConnectionFactory(connectionString *string) (ConnectionFactory, error) {
+func NewConnectionFactory(connectionString string) (ConnectionFactory, error) {
+	var connectionFactory ConnectionFactory
 	var err error
-	databaseURL, err = normalizeDatabaseURL(connectionString)
-	if err != nil {
-		return nil, err
+	if len(connectionString) == 0 {
+		connectionFactory = newSQLiteConnectionFactory()
+	} else {
+		connectionFactory, err = newPostgresConnectionFactory(&connectionString)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	connection, err := gorm.Open("postgres", databaseURL)
+	connection, err := connectionFactory.Open()
 	if err != nil {
 		return nil, err
 	}
-	defer connection.Close()
 
 	connection.AutoMigrate(&Soup{}, &SoupOfTheDay{}, &Score{})
 
-	var connFactory ConnectionFactory = &connectionFactory{
-		databaseURL: databaseURL,
-	}
-
-	return connFactory, nil
+	return connectionFactory, nil
 }
 
 // Open returns an open database connection.
 func (cf *connectionFactory) Open() (db *gorm.DB, err error) {
-	return gorm.Open("postgres", cf.databaseURL)
+	return cf.connectionBuilder()
+}
+
+func newPostgresConnectionFactory(connectionString *string) (ConnectionFactory, error) {
+	databaseURL, err := normalizeDatabaseURL(connectionString)
+	if err != nil {
+		return nil, err
+	}
+
+	connectionBuilder := func() (*gorm.DB, error) {
+		return gorm.Open("postgres", databaseURL)
+	}
+
+	return newConnectionFactory(connectionBuilder), nil
+}
+
+func newSQLiteConnectionFactory() ConnectionFactory {
+	connectionBuilder := func() (*gorm.DB, error) {
+		return gorm.Open("sqlite3", "/gorm.db")
+	}
+
+	return newConnectionFactory(connectionBuilder)
+}
+
+func newConnectionFactory(connectionBuilder func() (*gorm.DB, error)) ConnectionFactory {
+	return &connectionFactory{
+		connectionBuilder: connectionBuilder,
+	}
 }
 
 func normalizeDatabaseURL(databaseURL *string) (string, error) {
