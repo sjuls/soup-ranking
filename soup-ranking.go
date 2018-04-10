@@ -4,41 +4,74 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sjuls/soup-ranking/dbctx"
-	"github.com/sjuls/soup-ranking/routes"
+	"github.com/sjuls/soup-ranking/middleware"
+	"github.com/sjuls/soup-ranking/score"
+	"github.com/sjuls/soup-ranking/slack"
+	"github.com/sjuls/soup-ranking/soup"
+	"github.com/sjuls/soup-ranking/status"
 )
 
 var (
-	allowedOrigins = []string{
-		"https://junesoup.surge.sh",
-		"http://junesoup.surge.sh",
-		"https://soup-ranking.herokuapp.com",
-		"http://soup-ranking.herokuapp.com",
+	middlewares = [](func(handler http.Handler) http.Handler){
+		middleware.Log,
+		middleware.CORS,
 	}
 )
 
 func main() {
 	port := os.Getenv("PORT")
 	database := os.Getenv("DATABASE_URL")
+	slackVerificationToken := os.Getenv("SLACK_VERIFICATION_TOKEN")
+	slackAccessToken := os.Getenv("SLACK_ACCESS_TOKEN")
+	slackBaseURL := os.Getenv("SLACK_BASEURL")
+	slackAdminUsers := os.Getenv("SLACK_ADMIN_USERS")
 
-	if err := dbctx.Init(&database); err != nil {
+	connFactory, err := dbctx.NewConnectionFactory(database)
+	if err != nil {
 		panic(err)
 	}
 
-	router := mux.NewRouter().StrictSlash(true)
-	routes.AddStatus(router)
-	routes.AddScore(router)
+	soupRepository := dbctx.NewSoupRepository(connFactory)
+	scoreRepository := dbctx.NewScoreRepository(connFactory)
 
-	log.Fatal(http.ListenAndServe(":"+port, wrapCORS(router)))
+	router := mux.NewRouter().StrictSlash(true)
+	routes := []func(router *mux.Router){
+		status.AddRoute,
+		soup.AddRoute(
+			soupRepository,
+		),
+		score.AddRoute(
+			scoreRepository,
+		),
+		slack.AddRoute(
+			slackVerificationToken,
+			slackBaseURL,
+			slackAccessToken,
+			soupRepository,
+			scoreRepository,
+			strings.Split(slackAdminUsers, ","),
+		),
+	}
+
+	registerRoutes(router, routes)
+
+	log.Printf("Starting up soup-ranking on port %s", port)
+	log.Fatal(http.ListenAndServe(":"+port, applyMiddleware(router)))
 }
 
-func wrapCORS(router *mux.Router) http.Handler {
-	corsHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
-	corsOrigin := handlers.AllowedOrigins(allowedOrigins)
-	corsMethods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+func registerRoutes(router *mux.Router, routes []func(router *mux.Router)) {
+	for _, route := range routes {
+		route(router)
+	}
+}
 
-	return handlers.CORS(corsHeaders, corsOrigin, corsMethods)(router)
+func applyMiddleware(handler http.Handler) http.Handler {
+	for _, middleware := range middlewares {
+		handler = middleware(handler)
+	}
+	return handler
 }

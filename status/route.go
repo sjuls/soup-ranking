@@ -1,4 +1,4 @@
-package routes
+package status
 
 import (
 	"net/http"
@@ -11,8 +11,8 @@ type status struct {
 	Status string `json:"status"`
 }
 
-// AddStatus - adds a status route to the provided router
-func AddStatus(r *mux.Router) {
+// AddRoute - adds a status route to the provided router
+func AddRoute(r *mux.Router) {
 	r.Methods("GET").
 		Name("Status").
 		Path("/_status").
@@ -24,5 +24,5 @@ func statusHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		"I am ALIVE!",
 	}
 
-	utils.JSON(w, status)
+	utils.WriteJSON(w, status)
 }
