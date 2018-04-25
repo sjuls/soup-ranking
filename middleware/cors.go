@@ -7,8 +7,14 @@ import (
 )
 
 var (
+	// TODO: Use OriginValidator
 	allowedOrigins = []string{
-		"http://localhost:*",
+		"http://localhost:3000",
+		"https://localhost:3000",
+		"http://localhost:5000",
+		"https://localhost:5000",
+		"http://localhost:8080",
+		"https://localhost:8080",
 		"https://junesoup.surge.sh",
 		"http://junesoup.surge.sh",
 		"https://soup-ranking.herokuapp.com",
