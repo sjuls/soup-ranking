@@ -26,13 +26,19 @@ func NewRateCommand(repo dbctx.ScoreRepository) Command {
 }
 
 func (c *rateCommand) Execute(args string, output io.Writer) {
-	rateMatcher, err := regexp.Compile("([1-9]|10)\\s(.*)")
+	rateMatcher, err := regexp.Compile("^\\s*([1-9]|10)\\s*(.*)$")
 	if err != nil {
 		fmt.Fprintln(output, err.Error())
 		return
 	}
 
 	rateMatches := rateMatcher.FindStringSubmatch(args)
+
+	if len(rateMatches) < 2 {
+		fmt.Fprintln(output, "Quit messing with me and GIVE ME THAT SOUP RATING!")
+		return
+	}
+
 	scoreValue, err := strconv.ParseInt(rateMatches[1], 10, 32)
 
 	if err != nil {
