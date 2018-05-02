@@ -12,9 +12,17 @@ type (
 	}
 )
 
+var (
+	handledEvents = map[string]int{}
+)
+
 // HandleEvent - Handle a Slack event by triggering registered eventhandlers.
 func (geh *GlobalEventHandler) HandleEvent(event *EventCallback) {
-	for _, eventHandler := range geh.EventHandlers {
-		go eventHandler.HandleEvent(event)
+	// Only handle events not seen before. TODO: Make scalable.
+	if _, ok := handledEvents[event.EventID]; !ok {
+		handledEvents[event.EventID] = event.EventTime
+		for _, eventHandler := range geh.EventHandlers {
+			go eventHandler.HandleEvent(event)
+		}
 	}
 }
