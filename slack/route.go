@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/sjuls/soup-ranking/soup"
+
 	"github.com/gorilla/mux"
 	"github.com/sjuls/soup-ranking/dbctx"
 	"github.com/sjuls/soup-ranking/slack/api"
@@ -27,13 +29,14 @@ func AddRoute(
 	baseURL string,
 	accessToken string,
 	soupRepository dbctx.SoupRepository,
+	soupManager *soup.Manager,
 	scoreRepository dbctx.ScoreRepository,
 	adminUsers []string,
 ) func(r *mux.Router) {
 	webAPI := api.NewSlackWebAPI(baseURL, accessToken, &http.Client{})
 	globalEventHandler := &GlobalEventHandler{
 		[]EventHandler{
-			NewCommandsHandler(webAPI, soupRepository, scoreRepository, adminUsers),
+			NewCommandsHandler(webAPI, soupRepository, soupManager, scoreRepository, adminUsers),
 		},
 	}
 

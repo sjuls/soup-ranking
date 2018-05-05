@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/sjuls/soup-ranking/soup"
+
 	"github.com/sjuls/soup-ranking/dbctx"
 
 	"github.com/mitchellh/mapstructure"
@@ -31,13 +33,15 @@ const (
 func NewCommandsHandler(
 	webAPI api.SlackWebAPI,
 	soupRepository dbctx.SoupRepository,
+	soupManager *soup.Manager,
 	scoreRepository dbctx.ScoreRepository,
 	adminUsers []string,
 ) EventHandler {
 	commands := map[string]commands.Command{
-		"today":     commands.NewTodayCommand(soupRepository),
+		"today":     commands.NewTodayCommand(soupManager),
 		"set-today": commands.NewSetTodayCommand(soupRepository),
-		"rate":      commands.NewRateCommand(scoreRepository),
+		"rate":      commands.NewRateCommand(scoreRepository, soupManager),
+		"sync-soup": commands.NewSyncSoupCommand(soupManager),
 	}
 
 	return &commandsHandler{

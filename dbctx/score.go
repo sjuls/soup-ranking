@@ -46,7 +46,7 @@ func (r *scoreRepository) SaveScore(score *Score) error {
 	tx := db.Begin()
 
 	soupOfTheDay := getCreateSoupOfTheDay(tx)
-	score.SoupOfTheDay = *soupOfTheDay
+	score.SoupOfTheDay = soupOfTheDay
 
 	tx.Create(score)
 	tx.Commit()

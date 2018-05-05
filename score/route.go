@@ -46,7 +46,7 @@ func createGetScoresHandlerFunc(repo dbctx.ScoreRepository) func(w http.Response
 		for i, score := range *scores {
 			dtos[i] = scoreDto{
 				Score:   score.Score,
-				Comment: score.Comment,
+				Comment: *score.Comment,
 			}
 		}
 
@@ -64,7 +64,7 @@ func createPostScoreHandlerFunc(repo dbctx.ScoreRepository) func(w http.Response
 
 		err := repo.SaveScore(&dbctx.Score{
 			Score:   score.Score,
-			Comment: score.Comment,
+			Comment: &score.Comment,
 		})
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
