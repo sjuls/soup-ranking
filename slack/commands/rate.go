@@ -12,11 +12,6 @@ import (
 )
 
 type (
-	rateFlags struct {
-		Score   int
-		Comment string
-	}
-
 	rateCommand struct {
 		repo        dbctx.ScoreRepository
 		soupManager *soup.Manager

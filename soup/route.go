@@ -13,7 +13,7 @@ const (
 )
 
 type soupDto struct {
-	Name string `json:"name"`
+	Name *string `json:"name"`
 }
 
 // AddRoute - Adds routes to the provided router
@@ -35,7 +35,7 @@ func createGetSoupHandlerFunc(soupManager *Manager) func(http.ResponseWriter, *h
 			return
 		}
 
-		dto := soupDto{Name: *soupName}
+		dto := soupDto{Name: soupName}
 
 		utils.WriteJSON(w, dto)
 	}
