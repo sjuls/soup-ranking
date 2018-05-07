@@ -6,27 +6,28 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/sjuls/soup-ranking/soup"
+
 	"github.com/sjuls/soup-ranking/dbctx"
 )
 
 type (
-	rateFlags struct {
-		Score   int
-		Comment string
-	}
-
 	rateCommand struct {
-		repo dbctx.ScoreRepository
+		repo        dbctx.ScoreRepository
+		soupManager *soup.Manager
 	}
 )
 
 // NewRateCommand create a new rate command
-func NewRateCommand(repo dbctx.ScoreRepository) Command {
-	return &rateCommand{repo}
+func NewRateCommand(repo dbctx.ScoreRepository, soupManager *soup.Manager) Command {
+	return &rateCommand{
+		repo,
+		soupManager,
+	}
 }
 
 func (c *rateCommand) Execute(args string, output io.Writer) {
-	rateMatcher, err := regexp.Compile("^\\s*([1-9]|10)\\s*(.*)$")
+	rateMatcher, err := regexp.Compile("^\\s*(10|[1-9])\\s*(.*)$")
 	if err != nil {
 		fmt.Fprintln(output, err.Error())
 		return
@@ -56,16 +57,29 @@ func (c *rateCommand) Execute(args string, output io.Writer) {
 	}
 
 	if len(args) > 2 {
-		score.Comment = rateMatches[2]
+		score.Comment = &rateMatches[2]
+	}
+
+	soupName, err := c.soupManager.GetSoupName()
+	if err != nil {
+		fmt.Fprintln(output, err.Error())
+		return
 	}
 
 	err = c.repo.SaveScore(&score)
 
 	if err != nil {
 		fmt.Fprintln(output, err.Error())
-	} else {
-		fmt.Fprintln(output, "Thank you for your soup rating!")
+		return
 	}
+
+	fmt.Fprintf(output, "You've rated the soup `%s` a %d!\n\n", *soupName, scoreValue)
+
+	if len(args) > 2 {
+		fmt.Fprintf(output, "You left the following comment:\n```%s```\n\n", rateMatches[2])
+	}
+
+	fmt.Fprintln(output, "Thank you for your soup rating!")
 }
 
 func (c *rateCommand) RequiresAdmin() bool {

@@ -5,23 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/sjuls/soup-ranking/utils"
 )
 
 type (
 	slackWebAPI struct {
 		baseURL     string
 		accessToken string
-		httpClient  HTTPClient
+		httpClient  utils.HTTPClient
 	}
 
 	// SlackWebAPI simplifies interactions with Slack's web api, see <a href="https://api.slack.com/web" />
 	SlackWebAPI interface {
 		PostMessage(message *PostMessage) (*http.Response, error)
-	}
-
-	// HTTPClient defines a means to invoke http requests
-	HTTPClient interface {
-		Do(req *http.Request) (*http.Response, error)
 	}
 
 	// PostMessage struct is the data transfer object available for the chat.postMessage method
@@ -34,7 +31,7 @@ type (
 )
 
 // NewSlackWebAPI creates a new SlackWebApi
-func NewSlackWebAPI(baseURL string, accessToken string, httpClient HTTPClient) SlackWebAPI {
+func NewSlackWebAPI(baseURL string, accessToken string, httpClient utils.HTTPClient) SlackWebAPI {
 	return &slackWebAPI{
 		baseURL,
 		accessToken,

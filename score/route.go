@@ -14,8 +14,8 @@ const (
 )
 
 type scoreDto struct {
-	Score   int    `json:"score"`
-	Comment string `json:"comment"`
+	Score   int     `json:"score"`
+	Comment *string `json:"comment"`
 }
 
 // AddRoute - Adds routes to the provided router

@@ -13,6 +13,7 @@ WORKDIR $GOPATH/src/$REPO_NAME
 
 RUN mkdir -p /out
 RUN dep ensure
+RUN go test ./...
 RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o /out/soup-ranking .
 
 FROM alpine as soup-ranking

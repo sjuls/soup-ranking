@@ -21,11 +21,11 @@ func NewSetTodayCommand(repo dbctx.SoupRepository) Command {
 }
 
 func (c *setTodayCommand) Execute(args string, output io.Writer) {
-	err := c.repo.SetSoup(args)
+	_, err := c.repo.SetSoupOfTheDay(args)
 	if err != nil {
 		fmt.Fprintln(output, err.Error())
 	} else {
-		fmt.Fprintf(output, "Roger, admin. The soup of the day is now set to: %s.", args)
+		fmt.Fprintf(output, "Roger, admin. The soup of the day is now set to: `%s`.", args)
 	}
 }
 

@@ -4,28 +4,28 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/sjuls/soup-ranking/dbctx"
+	"github.com/sjuls/soup-ranking/soup"
 )
 
 type (
 	todayCommand struct {
-		repo dbctx.SoupRepository
+		soupManager *soup.Manager
 	}
 )
 
 // NewTodayCommand create a new today command
-func NewTodayCommand(repo dbctx.SoupRepository) Command {
+func NewTodayCommand(soupManager *soup.Manager) Command {
 	return &todayCommand{
-		repo,
+		soupManager,
 	}
 }
 
 func (c *todayCommand) Execute(args string, output io.Writer) {
-	soupOfTheDay, err := c.repo.GetSoupOfTheDay()
+	soupName, err := c.soupManager.GetSoupName()
 	if err != nil {
 		fmt.Fprintln(output, err.Error())
 	} else {
-		fmt.Fprintf(output, "The soup of the day is: %s.", soupOfTheDay.Soup.Name)
+		fmt.Fprintf(output, "The soup of the day is: `%s`.", *soupName)
 	}
 }
 

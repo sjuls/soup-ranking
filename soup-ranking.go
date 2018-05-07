@@ -36,13 +36,14 @@ func main() {
 	}
 
 	soupRepository := dbctx.NewSoupRepository(connFactory)
+	soupManager := soup.NewManager(soupRepository, soup.NewScraper(&http.Client{}))
 	scoreRepository := dbctx.NewScoreRepository(connFactory)
 
 	router := mux.NewRouter().StrictSlash(true)
 	routes := []func(router *mux.Router){
 		status.AddRoute,
 		soup.AddRoute(
-			soupRepository,
+			soupManager,
 		),
 		score.AddRoute(
 			scoreRepository,
@@ -52,6 +53,7 @@ func main() {
 			slackBaseURL,
 			slackAccessToken,
 			soupRepository,
+			soupManager,
 			scoreRepository,
 			strings.Split(slackAdminUsers, ","),
 		),
